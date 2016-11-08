@@ -1,0 +1,6 @@
+
+dependencies {
+    compile project(':ndbench-api')
+
+    compile 'org.springframework.data:spring-data-geode:1.0.0.APACHE-GEODE-INCUBATING-M3'
+}
