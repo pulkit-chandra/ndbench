@@ -16,7 +16,10 @@ import org.slf4j.LoggerFactory;
  * This is a Geode plugin which assumes that Geode processes
  * are running on the localhost.
  *
- * Locator process is running on localhost and port is *55221*
+ * Locator process is running on localhost and port is *55221*.
+ * Also assumes a region with the name "Sample" name exists on
+ * cache.
+ *
  * @author Pulkit Chandra
  *
  */
@@ -24,10 +27,13 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @NdBenchClientPlugin("GeodeLocalhostClient")
 //@Import(SpringDataGeodeConfiguration.class)
-@SuppressWarnings("unused")
+
 public class GeodeLocalPlugin implements NdBenchClient{
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(GeodeLocalPlugin.class);
+  private final static Logger logger = LoggerFactory.getLogger(GeodeLocalPlugin.class);
+
+  private static final String ResultOK = "Ok";
+  private static final String CacheMiss = null;
 
   private DataGenerator dataGenerator;
 
@@ -35,32 +41,45 @@ public class GeodeLocalPlugin implements NdBenchClient{
   private ClientCache clientCache;
 
 //  @Autowired
-  private Region<Object, Object> sampleRegion;
+  private Region<String, String> sampleRegion;
 
   public void init(final DataGenerator dataGenerator) throws Exception {
     this.dataGenerator = dataGenerator;
-    LOGGER.info("Initializing Geode Region");
+    logger.info("Initializing Geode Region");
     clientCache = new ClientCacheFactory()
         .addPoolLocator("10.0.0.138",55221)
         .create();
     sampleRegion =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("Sample");
+        clientCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY).create("Sample");
   }
 
   public String readSingle(final String key) throws Exception {
-    return null;
+    String result = sampleRegion.get(key);
+    if (null != result){
+      if (result.isEmpty()){
+        throw new Exception("Data retrieved is not NULL but empty string ! ");
+      }
+    }
+    else {
+      return CacheMiss;
+    }
+    return ResultOK;
   }
 
   public String writeSingle(final String key) throws Exception {
-    return null;
+    String result = sampleRegion.put(key, dataGenerator.getRandomValue());
+
+    return result;
   }
 
   public void shutdown() throws Exception {
-
+    if (!clientCache.isClosed()){
+      clientCache.close();
+    }
   }
 
   public String getConnectionInfo() throws Exception {
-    return null;
+    return clientCache.getDefaultPool().getLocators().toString();
   }
 
   public String runWorkFlow() throws Exception {
