@@ -34,9 +34,9 @@ public class EnvParserTest {
     List<URI> results = envParser.getLocators();
 
     Assert.assertNotEquals(0, results.size());
-    Assert.assertTrue(results.contains(new URI("locator://10.0.0.1:55221")));
-    Assert.assertTrue(results.contains(new URI("locator://10.0.0.2:55221")));
-    Assert.assertTrue(results.contains(new URI("locator://10.0.0.3:55221")));
+    Assert.assertTrue(results.contains(new URI("locator://10.0.48.11:55221")));
+    Assert.assertTrue(results.contains(new URI("locator://10.0.32.8:55221")));
+    Assert.assertTrue(results.contains(new URI("locator://10.0.48.10:55221")));
   }
 
   @Test

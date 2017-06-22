@@ -11,8 +11,13 @@ dependencies {
     // compile project(':ndbench-dynamodb-plugins')  // Commented as part of https://github.com/Netflix/ndbench/issues/197
     compile project(':ndbench-cockroachdb-plugins')
     compile project(':ndbench-dyno-plugins')
-    compile project(':ndbench-es-plugins')
-    compile project(':ndbench-geode-plugins')
+    compile (project(':ndbench-es-plugins')) {
+        exclude group: 'org.apache.logging.log4j'
+    }
+    compile (project(':ndbench-geode-plugins')){
+//        exclude group: 'org.apache.logging.log4j'
+        exclude group: 'org.slf4j'
+    }
     compile project(':ndbench-janusgraph-plugins')       
     compile project(':ndbench-sample-plugins')
     
