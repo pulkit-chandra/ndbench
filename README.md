@@ -14,7 +14,7 @@
 * Apache Cassandra (Thrift and CQL)
 * Redis
 * Elasticsearch
-* Elassandras
+* Elassandra
 * Amazon DynamoDB
 * Apache Geode
 * JanusGraph
