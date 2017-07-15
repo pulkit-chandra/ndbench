@@ -26,6 +26,7 @@ import com.netflix.archaius.api.config.SettableConfig;
 import com.netflix.archaius.api.inject.RuntimeLayer;
 import com.netflix.ndbench.api.plugin.DataGenerator;
 import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
+import com.netflix.ndbench.api.plugin.NdBenchClient;
 import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.api.plugin.common.NdBenchConstants;
 import com.netflix.ndbench.core.config.IConfiguration;
@@ -37,9 +38,10 @@ import com.netflix.ndbench.core.util.LoadPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HEAD;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -77,7 +79,7 @@ public class NdBenchDriver {
     private final RPSCount rpsCount;
 
     private final AtomicReference<NdBenchAbstractClient<?>> clientRef =
-            new AtomicReference<>(null);
+            new AtomicReference<NdBenchAbstractClient<?>>(null);
 
     private final AtomicReference<KeyGenerator> keyGeneratorWriteRef = new AtomicReference<>(null);
     private final AtomicReference<KeyGenerator> keyGeneratorReadRef = new AtomicReference<>(null);
@@ -89,10 +91,10 @@ public class NdBenchDriver {
     private final SettableConfig settableConfig;
 
     @Inject
-    NdBenchDriver(IConfiguration config,
-                  NdBenchMonitor ndBenchMonitor,
-                  DataGenerator dataGenerator,
-                  @RuntimeLayer SettableConfig settableConfig) {
+    private NdBenchDriver(IConfiguration config,
+                          NdBenchMonitor ndBenchMonitor,
+                          DataGenerator dataGenerator,
+                          @RuntimeLayer SettableConfig settableConfig) {
 
         this.config = config;
 
@@ -236,17 +238,22 @@ public class NdBenchDriver {
 
             threadPool.submit((Callable<Void>) () -> {
 
-                while (!Thread.currentThread().isInterrupted()) {
-                    boolean noMoreKey = false;
-
-                    if (((operation.isReadType() && readsStarted.get()) ||
-                            (operation.isWriteType() && writesStarted.get())) && rateLimiter.get().tryAcquire()) {
-                        final Set<String> keys = new HashSet<>(bulkSize * 2);
-                        while (keys.size() < bulkSize) {
-                            keys.add(keyGenerator.getNextKey());
-                            if (!keyGenerator.hasNextKey()) {
-                                noMoreKey = true;
-                                break;
+                    while (!Thread.currentThread().isInterrupted()) {
+                        if ((operation.isReadType() && readsStarted.get()) ||
+                                (operation.isWriteType() && writesStarted.get())) {
+                            if (rateLimiter.get().tryAcquire()) {
+                                // TODO - remove this
+                                Logger.info("operating at rate {} at {}", rateLimiter.get().getRate(), new Date().getTime());
+                                operation.process(
+                                        ndBenchMonitor, keyGenerator.getNextKey(), rateLimiter, isAutoTuneEnabled);
+                            }
+                        }
+                        if (!keyGenerator.hasNextKey()) {
+                            Logger.info("No more keys to process, hence stopping the process.");
+                            if (operation.isReadType()) {
+                                stopReads();
+                            } else if (operation.isWriteType()) {
+                                stopWrites();
                             }
                         } // eo keygens
 
