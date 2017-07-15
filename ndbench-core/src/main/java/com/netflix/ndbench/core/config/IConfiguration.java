@@ -99,23 +99,4 @@ public interface IConfiguration {
     @DefaultValue("false")
     boolean isAutoTuneEnabled();
 
-
-    @DefaultValue("60")
-    Integer getAutoTuneRampPeriodMillisecs();
-
-    @DefaultValue("1")
-    Integer getAutoTuneIncrementIntervalMillisecs();
-
-    @DefaultValue("1000")
-    Integer getAutoTuneFinalWriteRate();
-
-    /**
-     *
-     * Threshold write failure ratio beyond which no auto-tune increase will occur. By default if failure rate is
-     * grows larger than 1% auto tune triggered rate increases will cease.
-     *
-     */
-    @DefaultValue("0.01")
-    Float getAutoTuneWriteFailureRatioThreshold();
-
 }
