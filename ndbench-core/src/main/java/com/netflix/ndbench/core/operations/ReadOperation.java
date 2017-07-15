@@ -19,6 +19,7 @@ package com.netflix.ndbench.core.operations;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
+import com.netflix.ndbench.api.plugin.NdBenchClient;
 import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.core.NdBenchDriver;
 import org.slf4j.Logger;
