@@ -48,7 +48,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -463,39 +462,4 @@ public class NdBenchDriver {
         return keyGeneratorReadRef.get();
     }
 
-    private static class RPSCount {
-        private final AtomicLong reads = new AtomicLong(0L);
-        private final AtomicLong writes = new AtomicLong(0L);
-        private final IConfiguration config;
-        private final NdBenchMonitor ndBenchMonitor;
-
-        public RPSCount(IConfiguration config, NdBenchMonitor ndBenchMonitor) {
-            this.config = config;
-            this.ndBenchMonitor = ndBenchMonitor;
-        }
-
-        private void updateRPS() {
-            int secondsFreq = config.getStatsUpdateFreqSeconds();
-
-
-            long totalReads = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getReadFailure();
-            long totalWrites = ndBenchMonitor.getWriteSuccess() + ndBenchMonitor.getWriteFailure();
-            long totalOps = totalReads + totalWrites;
-            long totalSuccess = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getWriteSuccess();
-
-            long readRps = (totalReads - reads.get()) / secondsFreq;
-            long writeRps = (totalWrites - writes.get()) / secondsFreq;
-
-            long sRatio = (totalOps > 0) ? (totalSuccess * 100L / (totalOps)) : 0;
-
-            reads.set(totalReads);
-            writes.set(totalWrites);
-            ndBenchMonitor.setWriteRPS(writeRps);
-            ndBenchMonitor.setReadRPS(readRps);
-
-            Logger.info("Read RPS: " + readRps + ", Write RPS: " + writeRps +
-                    ", total RPS: " + (readRps + writeRps) + ", Success Ratio: " + sRatio + "%");
-        }
-
-    }
 }
