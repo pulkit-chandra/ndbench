@@ -37,6 +37,7 @@ import com.netflix.ndbench.core.util.LoadPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HEAD;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -104,14 +106,19 @@ public class NdBenchDriver {
         this.settableConfig = settableConfig;
         this.rpsCount = new RPSCount(readsStarted, writesStarted, readLimiter, writeLimiter, config, ndBenchMonitor);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("*** shutting down NdBench server since JVM is shutting down");
-            NdBenchDriver.this.stop();
-            try {
-                NdBenchDriver.this.shutdownClient();
-                Thread.sleep(2000);
-            } catch (Exception e) {
-                //ignore
+
+        this.rpsCount = new RPSCount(readsStarted, writesStarted, readLimiter, writeLimiter, config, ndBenchMonitor);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                System.err.println("*** shutting down NdBench server since JVM is shutting down");
+                NdBenchDriver.this.stop();
+                try {
+                    NdBenchDriver.this.shutdownClient();
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    //ignore
+                }
             }
         }));
     }
@@ -462,4 +469,65 @@ public class NdBenchDriver {
         return keyGeneratorReadRef.get();
     }
 
+    private static class RPSCount {
+        private final AtomicLong reads = new AtomicLong(0L);
+        private final AtomicLong writes = new AtomicLong(0L);
+        private final IConfiguration config;
+        private final NdBenchMonitor ndBenchMonitor;
+        private final AtomicReference<RateLimiter> readLimiter;
+        private final AtomicReference<RateLimiter> writeLimiter;
+        private final AtomicBoolean readsStarted;
+        private final AtomicBoolean writesStarted;
+
+        public RPSCount(AtomicBoolean readsStarted,
+                        AtomicBoolean writesStarted,
+                        AtomicReference<RateLimiter> readLimiter,
+                        AtomicReference<RateLimiter> writeLimiter,
+                        IConfiguration config,
+                        NdBenchMonitor ndBenchMonitor) {
+
+            this.readsStarted = readsStarted;
+            this.writesStarted = writesStarted;
+            this.readLimiter = readLimiter;
+            this.writeLimiter = writeLimiter;
+            this.config = config;
+            this.ndBenchMonitor = ndBenchMonitor;
+        }
+
+
+        private void updateRPS() {
+            int secondsFreq = config.getStatsUpdateFreqSeconds();
+
+
+            long totalReads = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getReadFailure();
+            long totalWrites = ndBenchMonitor.getWriteSuccess() + ndBenchMonitor.getWriteFailure();
+            long totalOps = totalReads + totalWrites;
+            long totalSuccess = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getWriteSuccess();
+
+            long readRps = (totalReads - reads.get()) / secondsFreq;
+            long writeRps = (totalWrites - writes.get()) / secondsFreq;
+
+            long sRatio = (totalOps > 0) ? (totalSuccess * 100L / (totalOps)) : 0;
+
+            reads.set(totalReads);
+            writes.set(totalWrites);
+            ndBenchMonitor.setWriteRPS(writeRps);
+            ndBenchMonitor.setReadRPS(readRps);
+
+            Logger.info("Read RPS: " + readRps + ", Write RPS: " + writeRps +
+                    ", total RPS: " + (readRps + writeRps) + ", Success Ratio: " + sRatio + "%");
+            long expectedReadRate = (long) this.readLimiter.get().getRate();
+            long expectedwriteRate = (long) this.writeLimiter.get().getRate();
+            String bottleneckMsg = "If this occurs consistently the benchmark client could be the bottleneck.";
+
+            if (readsStarted.get() && readRps < expectedReadRate) {
+                Logger.warn("Observed Read RPS  ({}) less than expected read rate + ({}).\n{}",
+                        readRps, expectedReadRate, bottleneckMsg);
+            }
+            if (writesStarted.get() &&   writeRps < expectedwriteRate) {
+                Logger.warn("Observed Write RPS  ({}) less than expected write rate + ({}).\n{}",
+                        writeRps, expectedwriteRate, bottleneckMsg);
+            }
+        }
+    }
 }
