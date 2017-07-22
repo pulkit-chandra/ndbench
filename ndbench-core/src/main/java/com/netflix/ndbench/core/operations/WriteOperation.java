@@ -18,6 +18,7 @@
 package com.netflix.ndbench.core.operations;
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.netflix.archaius.api.config.SettableConfig;
 import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
 import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.core.NdBenchDriver;
@@ -45,7 +46,7 @@ public class WriteOperation<W> implements NdBenchDriver.NdBenchOperation {
     @Override
     public boolean process(NdBenchDriver driver,
                            NdBenchMonitor stats,
-                           List<String> keys,
+                           String key,
                            AtomicReference<RateLimiter> rateLimiter,
                            boolean isAutoTuneEnabled) {
         try {
@@ -63,14 +64,12 @@ public class WriteOperation<W> implements NdBenchDriver.NdBenchOperation {
 
             if (isAutoTuneEnabled) {
                 Double newRateLimit;
-                if ((newRateLimit = client.autoTuneWriteRateLimit(rateLimiter.get().getRate(), result, stats)) > 0) {
-                    Logger.info("Updating write rate limit to {}", newRateLimit);  // i can get rid of this later.. TODO
-                    rateLimiter.set(RateLimiter.create(newRateLimit));
+                double currentRate = rateLimiter.get().getRate();
+                if ((newRateLimit = client.autoTuneWriteRateLimit(currentRate, result, stats)) > 0
+                        && newRateLimit != currentRate) {
+                    driver.updateWriteRateLimit(newRateLimit);
                 }
             }
-
-            //TODO - should eventually remove this..
-            Logger.info("updating write success now have success={} and fails={}",stats.getWriteSuccess(), stats.getWriteFailure());
             stats.incWriteSuccess();
             return true;
         } catch (Exception e) {
