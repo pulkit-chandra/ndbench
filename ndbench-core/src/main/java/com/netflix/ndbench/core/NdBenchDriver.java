@@ -26,7 +26,6 @@ import com.netflix.archaius.api.config.SettableConfig;
 import com.netflix.archaius.api.inject.RuntimeLayer;
 import com.netflix.ndbench.api.plugin.DataGenerator;
 import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
-import com.netflix.ndbench.api.plugin.NdBenchClient;
 import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.api.plugin.common.NdBenchConstants;
 import com.netflix.ndbench.core.config.IConfiguration;
@@ -106,14 +105,17 @@ public class NdBenchDriver {
         this.settableConfig = settableConfig;
         this.rpsCount = new RPSCount(readsStarted, writesStarted, readLimiter, writeLimiter, config, ndBenchMonitor);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("*** shutting down NdBench server since JVM is shutting down");
-            NdBenchDriver.this.stop();
-            try {
-                NdBenchDriver.this.shutdownClient();
-                Thread.sleep(2000);
-            } catch (Exception e) {
-                //ignore
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                System.err.println("*** shutting down NdBench server since JVM is shutting down");
+                NdBenchDriver.this.stop();
+                try {
+                    NdBenchDriver.this.shutdownClient();
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    //ignore
+                }
             }
         }));
     }
@@ -245,7 +247,11 @@ public class NdBenchDriver {
                                 // TODO - remove this
                                 Logger.info("operating at rate {} at {}", rateLimiter.get().getRate(), new Date().getTime());
                                 operation.process(
-                                        ndBenchMonitor, keyGenerator.getNextKey(), rateLimiter, isAutoTuneEnabled);
+                                        NdBenchDriver.this,
+                                        ndBenchMonitor,
+                                        keyGenerator.getNextKey(),
+                                        rateLimiter,
+                                        isAutoTuneEnabled);
                             }
                         }
                         if (!keyGenerator.hasNextKey()) {
@@ -345,7 +351,7 @@ public class NdBenchDriver {
     public interface NdBenchOperation {
         boolean process(NdBenchDriver driver,
                         NdBenchMonitor monitor,
-                        List<String> keys,
+                        String key,
                         AtomicReference<RateLimiter> rateLimiter,
                         boolean isAutoTuneEnabled);
 
@@ -383,7 +389,7 @@ public class NdBenchDriver {
     }
 
     public void updateWriteRateLimit(double newLimit) {
-        settableConfig.setProperty(NdBenchConstants.WRITE_RATE_LIMIT_FULL_NAME, (int) Math.ceil(newLimit));
+        settableConfig.setProperty(IConfiguration.WRITE_RATE_LIMIT_FULL_NAME, (int) Math.ceil(newLimit));
         onWriteRateLimitChange();
     }
 
@@ -407,7 +413,7 @@ public class NdBenchDriver {
         int oldLimit = Double.valueOf(oldLimiter.getRate()).intValue();
         int newLimit = property;
 
-        logger.info("oldlimit={} / newLimit={}", oldLimit, newLimit);
+        Logger.info("oldlimit={} / newLimit={}", oldLimit, newLimit);
         if (oldLimit != newLimit) {
             logger.info("Updating rate Limit for: " + prop + " to: " + newLimit);
             rateLimiter.set(RateLimiter.create(newLimit));
