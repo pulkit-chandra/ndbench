@@ -1,13 +1,28 @@
 package org.libex.test.logging.log4j;
 
-import com.google.common.collect.ImmutableList;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Predicates.and;
+import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.libex.logging.log4j.LoggingEventsEx.toMessage;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.ws.rs.HEAD;
+
 import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Priority;
 import org.apache.log4j.spi.LoggingEvent;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -23,18 +38,9 @@ import org.libex.hamcrest.IsThrowable;
 import org.libex.logging.log4j.InMemoryAppender;
 import org.libex.logging.log4j.LoggingEventsEx;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.NotThreadSafe;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.libex.logging.log4j.LoggingEventsEx.toMessage;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  *
@@ -78,7 +84,7 @@ public class Log4jCapturer implements TestRule {
          *            the lowest level of messages that should be held
          * @return this instance
          *
-         * @see AppenderSkeleton#setThreshold(Priority)
+         * @see org.apache.log4j.AppenderSkeleton#setThreshold(org.apache.log4j.Priority)
          */
         public Log4jCapturerBuilder setThreshold(final Level threshold) {
             this.threshold = threshold;
@@ -93,7 +99,7 @@ public class Log4jCapturer implements TestRule {
          *            the layout to set
          * @return this instance
          *
-         * @see AppenderSkeleton#setLayout(Layout)
+         * @see org.apache.log4j.AppenderSkeleton#setLayout(Layout)
          */
         public Log4jCapturerBuilder setLayout(final Layout layout) {
             this.layout = layout;
@@ -197,8 +203,9 @@ public class Log4jCapturer implements TestRule {
      * @return an unmodifiable Iterable over the list of logs that match the
      *         passed assertion
      */
-    private Stream<LoggingEvent> filter(final Predicate<LoggingEvent> assertion) {
-        return appender.getLoggingEvents().stream().filter(assertion);
+    public Iterable<LoggingEvent> filter(final Predicate<LoggingEvent> assertion) {
+        List<LoggingEvent> logs = appender.getLoggingEvents();
+        return Iterables.filter(logs, assertion);
     }
 
     /**
@@ -209,7 +216,7 @@ public class Log4jCapturer implements TestRule {
      * @return an unmodifiable Iterable over the list of logs that match the
      *         passed assertion
      */
-    private Stream<LoggingEvent> getLogs(final LogAssertion assertion) {
+    public Iterable<LoggingEvent> getLogs(final LogAssertion assertion) {
         return filter(assertion.criteria());
     }
 
@@ -222,7 +229,7 @@ public class Log4jCapturer implements TestRule {
      *         that match the passed assertion
      */
     public Iterable<String> getLogMessages(final LogAssertion assertion) {
-        return getLogs(assertion).map(toMessage()).collect(Collectors.toList());
+        return transform(getLogs(assertion), toMessage());
     }
 
     /**
@@ -236,14 +243,15 @@ public class Log4jCapturer implements TestRule {
         List<LoggingEvent> logs = appender.getLoggingEvents();
 
         if (assertion.times <=1 ) {
-            LoggingEvent event = logs.stream().filter(assertion.criteria()).findFirst().orElse(null);
+            LoggingEvent event = find(logs, assertion.criteria(), null);
+
             Matcher<Object> matcher = (assertion.logged) ? notNullValue()
                     : nullValue();
             MatcherAssert.assertThat(assertion.toString(), event, matcher);
         } else {
-            MatcherAssert.assertThat(assertion.toString(),
-                    logs.stream().filter(assertion.criteria()).collect(Collectors.toList()),
-                    IsIterableWithSize.iterableWithSize(assertion.times));
+            Iterable<LoggingEvent> event = Iterables.filter(logs, assertion.criteria());
+            MatcherAssert.assertThat(assertion.toString(), event,
+                    IsIterableWithSize.<LoggingEvent> iterableWithSize(assertion.times));
         }
 
     }
@@ -418,9 +426,9 @@ public class Log4jCapturer implements TestRule {
 
         @SuppressWarnings("unchecked")
         private Predicate<LoggingEvent> criteria() {
-            return LoggingEventsEx.withLevel(level)
-                    .and(LoggingEventsEx.withRenderedMessage(message))
-                    .and(LoggingEventsEx.withThrowable(exception));
+            return and(LoggingEventsEx.withLevel(level),
+                    LoggingEventsEx.withRenderedMessage(message),
+                    LoggingEventsEx.withThrowable(exception));
         }
 
         @Override
@@ -452,7 +460,7 @@ public class Log4jCapturer implements TestRule {
         }
 
         private boolean notIsAnything(final Matcher<?> matcher) {
-            return !(matcher instanceof IsAnything);
+            return !(matcher instanceof org.hamcrest.core.IsAnything);
         }
     }
 }
