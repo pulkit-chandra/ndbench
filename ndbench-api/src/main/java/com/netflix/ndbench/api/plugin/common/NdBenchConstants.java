@@ -45,7 +45,7 @@ public final class NdBenchConstants {
     public static final String WRITE_RATE_LIMIT="writeRateLimit";
 
     // Use constant so as to avoid hard coded string references in calling code
-    public static final String WRITE_RATE_LIMIT_FULL_NAME = PROP_NAMESPACE + WRITE_RATE_LIMIT;
+    public static final String WRITE_RATE_LIMIT_FULL_NAME = PROP_PREFIX + WRITE_RATE_LIMIT;
 
     public static final String CONFIG_CLUSTER_DISCOVERY_NAME="clusters.json";
 
