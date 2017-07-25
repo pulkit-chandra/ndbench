@@ -1,11 +1,13 @@
 package org.libex.test;
 
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.libex.test.google.NullPointerTester;
 import org.libex.test.rules.CheckableErrorCollector;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.HEAD;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -50,6 +52,6 @@ public abstract class TestBase {
     protected void expectException(final Class<? extends Throwable> type, @Nullable final String substring,
             final Class<? extends Throwable> cause) {
         expectException(type, substring);
-        expectedException.expectCause(instanceOf(cause));
+        expectedException.expectCause((Matcher) instanceOf(cause));
     }
 }
