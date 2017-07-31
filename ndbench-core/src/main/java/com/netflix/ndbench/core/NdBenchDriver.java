@@ -37,11 +37,7 @@ import com.netflix.ndbench.core.util.LoadPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.HEAD;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -91,10 +87,10 @@ public class NdBenchDriver {
     private final SettableConfig settableConfig;
 
     @Inject
-    private NdBenchDriver(IConfiguration config,
-                          NdBenchMonitor ndBenchMonitor,
-                          DataGenerator dataGenerator,
-                          @RuntimeLayer SettableConfig settableConfig) {
+    NdBenchDriver(IConfiguration config,
+                  NdBenchMonitor ndBenchMonitor,
+                  DataGenerator dataGenerator,
+                  @RuntimeLayer SettableConfig settableConfig) {
 
         this.config = config;
 
@@ -530,7 +526,7 @@ public class NdBenchDriver {
                 Logger.warn("Observed Read RPS  ({}) less than expected read rate + ({}).\n{}",
                         readRps, expectedReadRate, bottleneckMsg);
             }
-            if (writesStarted.get() &&   writeRps < expectedwriteRate) {
+            if (writesStarted.get() && writeRps < expectedwriteRate) {
                 Logger.warn("Observed Write RPS  ({}) less than expected write rate + ({}).\n{}",
                         writeRps, expectedwriteRate, bottleneckMsg);
             }
