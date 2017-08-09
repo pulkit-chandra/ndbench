@@ -2,6 +2,11 @@ package com.netflix.ndbench.plugin.geode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.archaius.api.PropertyFactory;
+<<<<<<< HEAD:ndbench-geode-plugins/src/main/java/com/netflix/ndbench/plugin/geode/EnvParser.java
+=======
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+>>>>>>> Updates ndbench-geode-plugin with tests, allows DISCOVERY_ENV to set:ndbench-geode-plugins/src/main/java/com/netflix/ndbench/geode/plugin/EnvParser.java
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
