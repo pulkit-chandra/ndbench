@@ -11,6 +11,7 @@ import com.netflix.ndbench.api.plugin.annotations.NdBenchClientPlugin;
 import com.netflix.ndbench.api.plugin.common.NdBenchConstants;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 /**
@@ -59,10 +60,10 @@ public class CassJavaDriverBatch extends CJavaDriverBasePlugin {
 
     @Override
     void preInit() {
-        TableName2  = propertyFactory.getProperty(NdBenchConstants.PROP_PREFIX+"cass.cfname2").asString("test2").get();
-        batchSize = propertyFactory.getProperty(NdBenchConstants.PROP_PREFIX+"cass.batchSize").asInteger(3).get();
-        useTimeStamp = propertyFactory.getProperty(NdBenchConstants.PROP_PREFIX+"cass.useTimestamp").asBoolean(true).get();
-        useMultiPartition = propertyFactory.getProperty(NdBenchConstants.PROP_PREFIX+"cass.useMultiPartition").asBoolean(false).get();
+        TableName2  = propertyFactory.getProperty(NdBenchConstants.PROP_NAMESPACE +"cass.cfname2").asString("test2").get();
+        batchSize = propertyFactory.getProperty(NdBenchConstants.PROP_NAMESPACE +"cass.batchSize").asInteger(3).get();
+        useTimeStamp = propertyFactory.getProperty(NdBenchConstants.PROP_NAMESPACE +"cass.useTimestamp").asBoolean(true).get();
+        useMultiPartition = propertyFactory.getProperty(NdBenchConstants.PROP_NAMESPACE +"cass.useMultiPartition").asBoolean(false).get();
     }
 
     @Override
@@ -123,6 +124,24 @@ public class CassJavaDriverBatch extends CJavaDriverBasePlugin {
         session.execute(batch);
         batch.clear();
         return ResultOK;
+    }
+
+    /**
+     * Perform a bulk read operation
+     * @return a list of response codes
+     * @throws Exception
+     */
+    public List<String> readBulk(final List<String> keys) throws Exception {
+        throw new UnsupportedOperationException("bulk operation is not supported");
+    }
+
+    /**
+     * Perform a bulk write operation
+     * @return a list of response codes
+     * @throws Exception
+     */
+    public List<String> writeBulk(final List<String> keys) throws Exception {
+        throw new UnsupportedOperationException("bulk operation is not supported");
     }
 
     private BoundStatement getBStmtTable1(String key) {

@@ -20,10 +20,10 @@ import com.google.inject.Singleton;
 import com.netflix.ndbench.api.plugin.DataGenerator;
 import com.netflix.ndbench.api.plugin.NdBenchClient;
 import com.netflix.ndbench.api.plugin.annotations.NdBenchClientPlugin;
-import com.netflix.ndbench.plugin.cass.CassJavaDriverPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +40,7 @@ import java.util.List;
 @Singleton
 @NdBenchClientPlugin("ElassandraCassJavaDriverPlugin")
 public class ElassandraCassJavaDriverPlugin implements NdBenchClient{
-    private static final Logger Logger = LoggerFactory.getLogger(CassJavaDriverPlugin.class);
+    private static final Logger Logger = LoggerFactory.getLogger(ElassandraCassJavaDriverPlugin.class);
 
     private Cluster cluster;
     private Session session;
@@ -127,6 +127,24 @@ public class ElassandraCassJavaDriverPlugin implements NdBenchClient{
 
         session.execute(bStmt);
         return ResultOK;
+    }
+
+    /**
+     * Perform a bulk read operation
+     * @return a list of response codes
+     * @throws Exception
+     */
+    public List<String> readBulk(final List<String> keys) throws Exception {
+        throw new UnsupportedOperationException("bulk operation is not supported");
+    }
+
+    /**
+     * Perform a bulk write operation
+     * @return a list of response codes
+     * @throws Exception
+     */
+    public List<String> writeBulk(final List<String> keys) throws Exception {
+        throw new UnsupportedOperationException("bulk operation is not supported");
     }
 
     /**

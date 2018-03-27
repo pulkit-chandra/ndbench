@@ -11,12 +11,14 @@
 
 
 ## Client APIs
-* Cassandra (Thrift and CQL)
+* Apache Cassandra (Thrift and CQL)
 * Redis
-* Dynomite with Redis
+* Netflix Dynomite (Redis API)
 * Elasticsearch
 * Elassandra
 * Geode
+* JanusGraph
+* Netflix EVCache (Memcache API)
 
 ## Features
    * Dynamically change the benchmark configurations while the test is running, hence perform tests along with our production microservices.
@@ -45,6 +47,9 @@ The gradlew script will pull down all necessary gradle components/infrastructure
 
 NdBench provides several default implementations ( NdBenchConfiguration, LocalClusterDiscovery etc). You can use these or choose to create your own. NdBench currently works on AWS or your local environment. We are open to contributions to support other platforms as well.
 
+
+
+
 ## How to
 
 The first step before building ndbench is to configure the interfaces related to your environment in the [InjectedWebListener](https://github.com/Netflix/ndbench/blob/master/ndbench-web/src/main/java/com/netflix/ndbench/defaultimpl/InjectedWebListener.java). Checkout the [Wiki](https://github.com/Netflix/ndbench/wiki/Configuration) for further explanation on what interfaces to bind based on your environment. 
@@ -53,10 +58,12 @@ The first step before building ndbench is to configure the interfaces related to
 2. Set up Auto-Scale Group (ASG) and spin up instances
 3. Deploy `ndbench-web.war` in your container
 
-#### Deploy to Cloud Foundry
+#### Deploy to Cloud Platforms
 
-1. Build and upload ndBench war to Cloud Foundry using `cf push`
-2. Note that the in the cf manifest that the `DISCOVERY_ENV` is set to `CF` so we can use the CfClusterDiscovery class
+`DISCOVERY_ENV` environment variable is responsible to bind the proper Cluster Discovery. Currently AWS, CF and Local are supported.
+Hence set the environment variable `DISCOVERY_ENV` based on the environment you are deploying the app. 
+For Amazon Web Services use `AWS`, for Cloud Foundry use `CF`, and for local deployments any other name.
+For Cloud Foundry, build and upload the ndbench war to CF using `cf push`.
 
 ## Run
 	    ./gradlew appRun
