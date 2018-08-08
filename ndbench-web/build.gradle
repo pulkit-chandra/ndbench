@@ -13,11 +13,6 @@ dependencies {
 
     // compile project(':ndbench-dynamodb-plugins')  // Commented as part of https://github.com/Netflix/ndbench/issues/197
     compile project(':ndbench-dyno-plugins')
-    compile project(':ndbench-es-plugins')
-    compile project(':ndbench-geode-plugins')
-    compile project(':ndbench-geode-plugins')
-    compile project(':ndbench-evcache-plugins')
-    compile project(':ndbench-geode-plugins')
     compile project(':ndbench-sample-plugins')
     compile( project(':ndbench-es-plugins')){
         exclude group: 'org.apache.logging.log4j'
@@ -47,7 +42,7 @@ gretty {
     // http://akhikhl.github.io/gretty-doc/Gretty-configuration.html
 }
 configurations {
-      grettyRunnerTomcat8 {
-           exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
-         }
+    grettyRunnerTomcat8 {
+        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
     }
+}
