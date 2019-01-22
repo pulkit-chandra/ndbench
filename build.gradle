@@ -1,8 +1,6 @@
+
 buildscript {
-  repositories {
-      jcenter()
-      mavenCentral()
-  }
+  repositories { jcenter() }
    dependencies {
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:latest.release'
         classpath "org.akhikhl.gretty:gretty:2.0.0"
@@ -25,7 +23,7 @@ apply from: file('gradle/release.gradle')
 */
 
 allprojects {
-
+    
     // https://www.developerfeed.com/how-do-disable-low-level-logging-apache-common-packages/
 
     // handy command display all transitive dependencies of each subproject
@@ -73,7 +71,6 @@ subprojects {
       compile  'com.google.inject.extensions:guice-multibindings:4.0'
 
       compile  'javax.inject:javax.inject:1'
-
 
     }
 }
