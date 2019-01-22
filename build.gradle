@@ -1,3 +1,4 @@
+
 buildscript {
   repositories { jcenter() }
    dependencies {
@@ -70,7 +71,6 @@ subprojects {
       compile  'com.google.inject.extensions:guice-multibindings:4.0'
 
       compile  'javax.inject:javax.inject:1'
-
 
     }
 }

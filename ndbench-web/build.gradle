@@ -29,7 +29,6 @@ dependencies {
         exclude group: 'org.apache.logging.log4j'
     }
     compile (project(':ndbench-geode-plugins')){
-//        exclude group: 'org.apache.logging.log4j'
         exclude group: 'org.slf4j'
     }
     compile project(':ndbench-janusgraph-plugins')
@@ -51,7 +50,7 @@ gretty {
     // http://akhikhl.github.io/gretty-doc/Gretty-configuration.html
 }
 configurations {
-    grettyRunnerTomcat8 {
-        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+      grettyRunnerTomcat8 {
+           exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+         }
     }
-}

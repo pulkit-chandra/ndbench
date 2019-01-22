@@ -24,16 +24,13 @@ import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.api.plugin.common.NdBenchConstants;
 import com.netflix.ndbench.core.config.IConfiguration;
 import com.netflix.ndbench.core.config.NdbenchConfigListener;
-import com.netflix.ndbench.core.discovery.AWSLocalClusterDiscovery;
-import com.netflix.ndbench.core.discovery.CfClusterDiscovery;
-import com.netflix.ndbench.core.discovery.IClusterDiscovery;
-import com.netflix.ndbench.core.discovery.LocalClusterDiscovery;
+import com.netflix.ndbench.core.discovery.*;
 import com.netflix.ndbench.core.generators.DefaultDataGenerator;
 import com.netflix.ndbench.core.monitoring.FakeMonitor;
 import com.netflix.ndbench.core.monitoring.NdBenchDefaultMonitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * This module defines the default bindings, this can be customized internally if one has specific services for Service discovery, metrics etc.,
@@ -44,15 +41,20 @@ public class NdBenchGuiceModule extends AbstractModule {
 
 
     @Override
-    protected void configure()
-    {
-        bind(NdBenchMonitor.class).to(FakeMonitor.class);
+    protected void configure() {
+        bind(NdBenchMonitor.class).to(NdBenchDefaultMonitor.class);
         String discoveryEnv = System.getenv(NdBenchConstants.DISCOVERY_ENV);
-        if(discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_CF)){
+        logger.info("DISCOVERY_ENV is set to: " + discoveryEnv);
+        if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_CF)) {
             bind(IClusterDiscovery.class).to(CfClusterDiscovery.class);
-        }else if(discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_AWS)){
+        } else if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_AWS)) {
             bind(IClusterDiscovery.class).to(AWSLocalClusterDiscovery.class);
-        }else{
+        } else if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_AWS_ASG)) {
+            bind(IClusterDiscovery.class).to(AwsAsgDiscovery.class);
+        } else if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_AWS_CONFIG_FILE)) {
+            bind(IClusterDiscovery.class).to(ConfigFileDiscovery.class);
+        }
+          else {
             bind(IClusterDiscovery.class).to(LocalClusterDiscovery.class);
         }
         bind(DataGenerator.class).to(DefaultDataGenerator.class);
