@@ -20,18 +20,11 @@ package com.netflix.ndbench.api.plugin;
 import java.util.List;
 
 /**
- * Defines default methods that provide a hook point for Auto-tuning.
- *
- * Auto-tuning is a process which automates the task of adjusting read/write rate limits right up to the point
- * where performance starts to fall below a configurable threshold. In a nutshell, the technique involves
- * (i) setting the initial read/write limit for your benchmark run to a low enough level that is guaranteed
- * not to overload the data store  you are benchmarking,  and then (ii) providing implementations for  the
- * autoTune[Write/Read]RateLimit methods which will first examine  three things: (1) events which encode the results of
- * read/write operations, (2) run time statistics, and (3) the currentRateLimit. After interpretting  these
- * three pieces of information the process will return a new recommended rate limit (which may be higher or
- * lower than currentRateLimit.)
- *
- * This interfaces provide backward compatability with legacy client plug-ins  (which do not support auto-tuning)
+ * Defines default methods that provide a hook point for Auto-tuning, more information for which may be found
+ * <a href="http://github.com/Netflix/ndbench/wiki/Configuration">here</a>.
+ * <p>
+ * <p>
+ * This interface provides backward compatability with legacy client plug-ins  (which do not support auto-tuning)
  * since the interface {@link  com.netflix.ndbench.api.plugin.NdBenchClient} concretizes the type parameter 'W'
  * to the type that heretofore has been returned by all clients implementing the writeSingle method (namely: String.)
  *
@@ -56,6 +49,13 @@ public interface NdBenchAbstractClient<W> {
      */
     String readSingle(final String key) throws Exception;
 
+    /**
+     * Perform a bulk read operation given the list of keys
+     *
+     * @return
+     * @throws Exception
+     */
+    List<String> readBulk(final List<String> keys) throws Exception;
 
     /**
      * Perform a single write operation
@@ -112,14 +112,14 @@ public interface NdBenchAbstractClient<W> {
      * @return - the new suggested rate limit -- ignored by driver if less-than-or-equal-to 0.
      */
 
-    default Double autoTuneWriteRateLimit(Double currentRateLimit, W event, NdBenchMonitor runStats) {
+    default Double autoTuneWriteRateLimit(Double currentRateLimit, List<W> event, NdBenchMonitor runStats) {
         return -1D;
     }
 
     /**
      * See documentation for {@link #autoTuneWriteRateLimit}
      */
-    default double autoTuneReadRateLimit(double currentRateLimit, W event, NdBenchMonitor runStats) {
+    default double autoTuneReadRateLimit(double currentRateLimit, List<W> event, NdBenchMonitor runStats) {
         throw new UnsupportedOperationException("not yet implemented");
     }
 }
