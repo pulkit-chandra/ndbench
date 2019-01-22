@@ -17,18 +17,15 @@
 
 package com.netflix.ndbench.core;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
-import com.netflix.ndbench.api.plugin.NdBenchClient;
-import com.netflix.ndbench.core.config.IConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;

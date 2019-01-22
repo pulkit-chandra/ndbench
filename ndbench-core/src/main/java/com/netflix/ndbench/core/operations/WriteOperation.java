@@ -18,7 +18,6 @@
 package com.netflix.ndbench.core.operations;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.netflix.archaius.api.config.SettableConfig;
 import com.netflix.ndbench.api.plugin.NdBenchAbstractClient;
 import com.netflix.ndbench.api.plugin.NdBenchMonitor;
 import com.netflix.ndbench.core.NdBenchDriver;
@@ -46,7 +45,7 @@ public class WriteOperation<W> implements NdBenchDriver.NdBenchOperation {
     @Override
     public boolean process(NdBenchDriver driver,
                            NdBenchMonitor stats,
-                           String key,
+                           List<String> keys,
                            AtomicReference<RateLimiter> rateLimiter,
                            boolean isAutoTuneEnabled) {
         try {

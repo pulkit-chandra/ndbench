@@ -38,6 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +48,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -75,7 +77,7 @@ public class NdBenchDriver {
     private final RPSCount rpsCount;
 
     private final AtomicReference<NdBenchAbstractClient<?>> clientRef =
-            new AtomicReference<NdBenchAbstractClient<?>>(null);
+            new AtomicReference<>(null);
 
     private final AtomicReference<KeyGenerator> keyGeneratorWriteRef = new AtomicReference<>(null);
     private final AtomicReference<KeyGenerator> keyGeneratorReadRef = new AtomicReference<>(null);
@@ -102,17 +104,14 @@ public class NdBenchDriver {
         this.settableConfig = settableConfig;
         this.rpsCount = new RPSCount(readsStarted, writesStarted, readLimiter, writeLimiter, config, ndBenchMonitor);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                System.err.println("*** shutting down NdBench server since JVM is shutting down");
-                NdBenchDriver.this.stop();
-                try {
-                    NdBenchDriver.this.shutdownClient();
-                    Thread.sleep(2000);
-                } catch (Exception e) {
-                    //ignore
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("*** shutting down NdBench server since JVM is shutting down");
+            NdBenchDriver.this.stop();
+            try {
+                NdBenchDriver.this.shutdownClient();
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                //ignore
             }
         }));
     }
@@ -237,25 +236,17 @@ public class NdBenchDriver {
 
             threadPool.submit((Callable<Void>) () -> {
 
-                    while (!Thread.currentThread().isInterrupted()) {
-                        if ((operation.isReadType() && readsStarted.get()) ||
-                                (operation.isWriteType() && writesStarted.get())) {
-                            if (rateLimiter.get().tryAcquire()) {
-                                //Logger.info("operating at rate {} at {}", rateLimiter.get().getRate(), new Date().getTime());
-                                operation.process(
-                                        NdBenchDriver.this,
-                                        ndBenchMonitor,
-                                        keyGenerator.getNextKey(),
-                                        rateLimiter,
-                                        isAutoTuneEnabled);
-                            }
-                        }
-                        if (!keyGenerator.hasNextKey()) {
-                            Logger.info("No more keys to process, hence stopping the process.");
-                            if (operation.isReadType()) {
-                                stopReads();
-                            } else if (operation.isWriteType()) {
-                                stopWrites();
+                while (!Thread.currentThread().isInterrupted()) {
+                    boolean noMoreKey = false;
+
+                    if (((operation.isReadType() && readsStarted.get()) ||
+                            (operation.isWriteType() && writesStarted.get())) && rateLimiter.get().tryAcquire()) {
+                        final Set<String> keys = new HashSet<>(bulkSize * 2);
+                        while (keys.size() < bulkSize) {
+                            keys.add(keyGenerator.getNextKey());
+                            if (!keyGenerator.hasNextKey()) {
+                                noMoreKey = true;
+                                break;
                             }
                         } // eo keygens
 
@@ -347,7 +338,7 @@ public class NdBenchDriver {
     public interface NdBenchOperation {
         boolean process(NdBenchDriver driver,
                         NdBenchMonitor monitor,
-                        String key,
+                        List<String> keys,
                         AtomicReference<RateLimiter> rateLimiter,
                         boolean isAutoTuneEnabled);
 
@@ -409,7 +400,7 @@ public class NdBenchDriver {
         int oldLimit = Double.valueOf(oldLimiter.getRate()).intValue();
         int newLimit = property;
 
-        Logger.info("oldlimit={} / newLimit={}", oldLimit, newLimit);
+        logger.info("oldlimit={} / newLimit={}", oldLimit, newLimit);
         if (oldLimit != newLimit) {
             logger.info("Updating rate Limit for: " + prop + " to: " + newLimit);
             rateLimiter.set(RateLimiter.create(newLimit));
@@ -471,65 +462,4 @@ public class NdBenchDriver {
         return keyGeneratorReadRef.get();
     }
 
-    static class RPSCount {
-        private final AtomicLong reads = new AtomicLong(0L);
-        private final AtomicLong writes = new AtomicLong(0L);
-        private final IConfiguration config;
-        private final NdBenchMonitor ndBenchMonitor;
-        private final AtomicReference<RateLimiter> readLimiter;
-        private final AtomicReference<RateLimiter> writeLimiter;
-        private final AtomicBoolean readsStarted;
-        private final AtomicBoolean writesStarted;
-
-        RPSCount(AtomicBoolean readsStarted,
-                 AtomicBoolean writesStarted,
-                 AtomicReference<RateLimiter> readLimiter,
-                 AtomicReference<RateLimiter> writeLimiter,
-                 IConfiguration config,
-                 NdBenchMonitor ndBenchMonitor) {
-
-            this.readsStarted = readsStarted;
-            this.writesStarted = writesStarted;
-            this.readLimiter = readLimiter;
-            this.writeLimiter = writeLimiter;
-            this.config = config;
-            this.ndBenchMonitor = ndBenchMonitor;
-        }
-
-
-        void updateRPS() {
-            int secondsFreq = config.getStatsUpdateFreqSeconds();
-
-
-            long totalReads = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getReadFailure();
-            long totalWrites = ndBenchMonitor.getWriteSuccess() + ndBenchMonitor.getWriteFailure();
-            long totalOps = totalReads + totalWrites;
-            long totalSuccess = ndBenchMonitor.getReadSuccess() + ndBenchMonitor.getWriteSuccess();
-
-            long readRps = (totalReads - reads.get()) / secondsFreq;
-            long writeRps = (totalWrites - writes.get()) / secondsFreq;
-
-            long sRatio = (totalOps > 0) ? (totalSuccess * 100L / (totalOps)) : 0;
-
-            reads.set(totalReads);
-            writes.set(totalWrites);
-            ndBenchMonitor.setWriteRPS(writeRps);
-            ndBenchMonitor.setReadRPS(readRps);
-
-            Logger.info("Read RPS: " + readRps + ", Write RPS: " + writeRps +
-                    ", total RPS: " + (readRps + writeRps) + ", Success Ratio: " + sRatio + "%");
-            long expectedReadRate = (long) this.readLimiter.get().getRate();
-            long expectedwriteRate = (long) this.writeLimiter.get().getRate();
-            String bottleneckMsg = "If this occurs consistently the benchmark client could be the bottleneck.";
-
-            if (readsStarted.get() && readRps < expectedReadRate) {
-                Logger.warn("Observed Read RPS  ({}) less than expected read rate + ({}).\n{}",
-                        readRps, expectedReadRate, bottleneckMsg);
-            }
-            if (writesStarted.get() && writeRps < expectedwriteRate) {
-                Logger.warn("Observed Write RPS  ({}) less than expected write rate + ({}).\n{}",
-                        writeRps, expectedwriteRate, bottleneckMsg);
-            }
-        }
-    }
 }

@@ -40,6 +40,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-autoscaling
     compile group: 'com.amazonaws', name: 'aws-java-sdk-autoscaling', version: '1.11.261'
 
-    
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-ec2
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-ec2', version: '1.11.261'
 
 }
