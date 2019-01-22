@@ -1,8 +1,6 @@
+
 buildscript {
-  repositories {
-      jcenter()
-      mavenCentral()
-  }
+  repositories { jcenter() }
    dependencies {
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:latest.release'
         classpath "org.akhikhl.gretty:gretty:2.0.0"
@@ -75,7 +73,6 @@ subprojects {
       compile  'com.google.inject.extensions:guice-multibindings:4.0'
 
       compile  'javax.inject:javax.inject:1'
-
 
     }
 }
