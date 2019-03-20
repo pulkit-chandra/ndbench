@@ -2,15 +2,15 @@ apply plugin: 'war'
 apply plugin: "org.akhikhl.gretty"
 
 dependencies {
+    compile project(':ndbench-api')
     compile (project(':ndbench-core')){
         exclude group: 'org.slf4j'
     }
-    compile project(':ndbench-api')
     compile project(':ndbench-core')
     compile (project(':ndbench-cass-plugins')) {
         exclude group: 'ch.qos.logback'
     }
-
+    
     // compile project(':ndbench-dynamodb-plugins')  // Commented as part of https://github.com/Netflix/ndbench/issues/197
     compile project(':ndbench-cockroachdb-plugins')
     compile project(':ndbench-dyno-plugins')
@@ -22,13 +22,7 @@ dependencies {
     }
     compile project(':ndbench-janusgraph-plugins')
     compile project(':ndbench-sample-plugins')
-    compile( project(':ndbench-es-plugins')){
-        exclude group: 'org.apache.logging.log4j'
-    }
-    compile (project(':ndbench-geode-plugins')){
-        exclude group: 'org.slf4j'
-    }
-    compile project(':ndbench-janusgraph-plugins')
+    
     compile 'com.google.inject.extensions:guice-servlet:4.0'
     compile 'com.google.inject:guice:4.0'
     compile group: 'com.owlike', name: 'genson', version: '1.4'
