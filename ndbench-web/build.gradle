@@ -9,7 +9,6 @@ dependencies {
     compile (project(':ndbench-core')){
         exclude group: 'org.slf4j'
     }
-    compile project(':ndbench-core')
     compile (project(':ndbench-cass-plugins')) {
         exclude group: 'ch.qos.logback'
     }

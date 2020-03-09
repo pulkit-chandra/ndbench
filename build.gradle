@@ -1,6 +1,8 @@
 
 buildscript {
-  repositories { jcenter() }
+  repositories { jcenter()
+      maven { url "http://repo.spring.io/libs-snapshot" }
+  }
    dependencies {
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:latest.release'
         classpath "org.akhikhl.gretty:gretty:2.0.0"
@@ -45,6 +47,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url "http://repo.spring.io/libs-snapshot" }
     }
 
     dependencies {
