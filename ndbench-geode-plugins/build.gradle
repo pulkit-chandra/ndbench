@@ -16,10 +16,8 @@ subprojects{
 
 dependencies {
     // We have dependency on the main project.
-    implementation(project(':ndbench-api')) {
-        exclude group: 'org.slf4j'
-    }
-    implementation('org.apache.geode:geode-core:1.10.0')
+    implementation(project(':ndbench-api'))
+    implementation('org.apache.geode:geode-core:1.11.0')
 
     
 
