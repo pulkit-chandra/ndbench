@@ -1,8 +1,6 @@
 
 buildscript {
-  repositories { jcenter()
-      maven { url "http://repo.spring.io/libs-snapshot" }
-  }
+  repositories { jcenter() }
    dependencies {
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:latest.release'
         classpath "org.akhikhl.gretty:gretty:2.0.0"
@@ -47,7 +45,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url "http://repo.spring.io/libs-snapshot" }
     }
 
     dependencies {
@@ -60,10 +57,9 @@ subprojects {
       //Logging
       compile 'org.slf4j:slf4j-api:1.6.1'
       compile 'org.slf4j:slf4j-log4j12:1.6.1'
-        // Archaius-2
-        compile ('com.netflix.archaius:archaius2-core:2.1.11'){
-            exclude group: 'org.slf4j'
-        }
+
+      // Archaius-2
+      compile group: 'com.netflix.archaius', name: 'archaius2-core', version: '2.1.11'
 
       //Unit Testing
       testCompile 'org.jmockit:jmockit:1.19'
