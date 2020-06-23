@@ -187,12 +187,6 @@ public class AbstractPluginTest {
             }
 
             @Override
-            public boolean isGenerateChecksum() { return false; }
-
-            @Override
-            public boolean isValidateChecksum() { return false; }
-
-            @Override
             public int getReadRateLimit() {
                 return 0;
             }
@@ -226,6 +220,7 @@ public class AbstractPluginTest {
             public Float getAutoTuneWriteFailureRatioThreshold() {
                 return maxAcceptableWriteFailures;
             }
+
 
         };
     }
