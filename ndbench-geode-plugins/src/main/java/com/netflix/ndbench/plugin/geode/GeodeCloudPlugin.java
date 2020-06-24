@@ -74,7 +74,7 @@ public class GeodeCloudPlugin implements NdBenchClient{
             Properties props = new Properties();
             props.setProperty(USER_NAME, envParser.getUsername());
             props.setProperty(PASSWORD, envParser.getPasssword());
-            props.setProperty("security-client-auth-init", "com.netflix.ndbench.plugin.geode.ClientAuthInitialize.create");
+            props.setProperty("security-client-auth-init", "com.netflix.ndbench.geode.plugin.ClientAuthInitialize.create");
 
             ClientCacheFactory ccf = new ClientCacheFactory(props);
             List<URI> locatorList = envParser.getLocators();

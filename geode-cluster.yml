@@ -1,0 +1,10 @@
+apiVersion: core.geode.apache.org/v1alpha1
+kind: GeodeCluster
+metadata:
+    name: ndbench-geode
+spec:
+    exposeExternalManagement: true
+    locators:
+        replicas: 1
+    servers:
+        replicas: 1
