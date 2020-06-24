@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import com.netflix.astyanax.model.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +127,7 @@ public class CassAstyanaxPlugin implements NdBenchClient {
             if (result.size() < (config.getColsPerRow())) {
                 throw new Exception("Num Cols returned not ok " + result.size());
             }
+
             if (coreConfig.isValidateChecksum())
             {
                 for (int i = 0; i < result.size(); i++)
