@@ -73,6 +73,8 @@ public class EnvParserTest {
     Assert.assertEquals("Tuo6wkdq0gqcl2ty6t2bQ", envParser.getPasssword());
   }
 
+
+
   private void setCreditentials(String vcapServices) throws Exception{
     // Mocking the credentials for getCredentials
     PropertyContainer mockPropertyContainer = mock(PropertyContainer.class);

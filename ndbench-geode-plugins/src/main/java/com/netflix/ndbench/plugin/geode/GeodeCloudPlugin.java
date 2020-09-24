@@ -82,6 +82,13 @@ public class GeodeCloudPlugin implements NdBenchClient{
                 ccf.addPoolLocator(locator.getHost(), locator.getPort());
             }
             clientCache = ccf.create();
+        }else if (this.propertyFactory.getProperty(NdBenchConstants.DISCOVERY_ENV).asString("").get().equals(NdBenchConstants.DISCOVERY_ENV_K8S)){
+          ClientCacheFactory ccf = new ClientCacheFactory();
+          List<URI> locatorList = envParser.getLocators();
+          for (URI locator : locatorList) {
+            ccf.addPoolLocator(locator.getHost(), locator.getPort());
+          }
+          clientCache = ccf.create();
         }else{
             clientCache = new ClientCacheFactory()
                     .addPoolLocator(Inet4Address.getLoopbackAddress().getHostAddress(),55221)

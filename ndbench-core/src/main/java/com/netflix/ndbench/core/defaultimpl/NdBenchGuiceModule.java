@@ -45,7 +45,9 @@ public class NdBenchGuiceModule extends AbstractModule {
         bind(NdBenchMonitor.class).to(NdBenchDefaultMonitor.class);
         String discoveryEnv = System.getenv(NdBenchConstants.DISCOVERY_ENV);
         logger.info("DISCOVERY_ENV is set to: " + discoveryEnv);
-        if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_CF)) {
+        if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_K8S)){
+            bind(IClusterDiscovery.class).to(K8sClusterDiscovery.class);
+        } else if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_CF)) {
             bind(IClusterDiscovery.class).to(CfClusterDiscovery.class);
         } else if (discoveryEnv != null && discoveryEnv.equals(NdBenchConstants.DISCOVERY_ENV_AWS)) {
             bind(IClusterDiscovery.class).to(AWSLocalClusterDiscovery.class);
