@@ -74,7 +74,7 @@ public class GeodeCloudPlugin implements NdBenchClient{
             Properties props = new Properties();
             props.setProperty(USER_NAME, envParser.getUsername());
             props.setProperty(PASSWORD, envParser.getPasssword());
-            props.setProperty("security-client-auth-init", "com.netflix.ndbench.geode.plugin.ClientAuthInitialize.create");
+            props.setProperty("security-client-auth-init", "com.netflix.ndbench.plugin.geode.ClientAuthInitialize.create");
 
             ClientCacheFactory ccf = new ClientCacheFactory(props);
             List<URI> locatorList = envParser.getLocators();
@@ -82,6 +82,13 @@ public class GeodeCloudPlugin implements NdBenchClient{
                 ccf.addPoolLocator(locator.getHost(), locator.getPort());
             }
             clientCache = ccf.create();
+        }else if (this.propertyFactory.getProperty(NdBenchConstants.DISCOVERY_ENV).asString("").get().equals(NdBenchConstants.DISCOVERY_ENV_K8S)){
+          ClientCacheFactory ccf = new ClientCacheFactory();
+          List<URI> locatorList = envParser.getLocators();
+          for (URI locator : locatorList) {
+            ccf.addPoolLocator(locator.getHost(), locator.getPort());
+          }
+          clientCache = ccf.create();
         }else{
             clientCache = new ClientCacheFactory()
                     .addPoolLocator(Inet4Address.getLoopbackAddress().getHostAddress(),55221)
