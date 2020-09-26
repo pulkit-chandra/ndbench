@@ -90,6 +90,7 @@ public class GeodeCloudPlugin implements NdBenchClient{
           }
           clientCache = ccf.create();
         }else{
+        	logger.info("Local loopback address : " + Inet4Address.getLoopbackAddress().getHostAddress());
             clientCache = new ClientCacheFactory()
                     .addPoolLocator(Inet4Address.getLoopbackAddress().getHostAddress(),55221)
                     .create();
