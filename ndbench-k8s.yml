@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ndbench-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: ndbench-ip
+spec:
+  backend:
+    serviceName: ndbench-service
+    servicePort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndbench-service
+  namespace: default
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    run: ndbench
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ndbench
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: ndbench
+  template:
+    metadata:
+      labels:
+        run: ndbench
+    spec:
+      containers:
+        - name: ndbench
+          image: gcr.io/cf-gemfire/ndbench:v6
+          ports:
+          - containerPort: 8080
+            protocol: TCP

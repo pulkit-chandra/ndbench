@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.util.List;
 import java.util.Properties;
@@ -90,8 +92,10 @@ public class GeodeCloudPlugin implements NdBenchClient{
           }
           clientCache = ccf.create();
         }else{
+          Socket socket = new Socket();
+          socket.connect(new InetSocketAddress("google.com", 80));
             clientCache = new ClientCacheFactory()
-                    .addPoolLocator(Inet4Address.getLoopbackAddress().getHostAddress(),55221)
+                    .addPoolLocator(socket.getLocalAddress().getHostAddress(), 55221)
                     .create();
         }
         sampleRegion = clientCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION);

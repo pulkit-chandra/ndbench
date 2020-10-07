@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -73,7 +74,14 @@ public class EnvParserTest {
     Assert.assertEquals("Tuo6wkdq0gqcl2ty6t2bQ", envParser.getPasssword());
   }
 
+  @Test
+  public void getPasswordK8sTest() throws Exception{
+    String vcapServices = IOUtils.toString(
+        this.getClass().getClassLoader().getResourceAsStream("k8s_vcap_services.json"), "UTF-8");
+    this.setCreditentials(vcapServices);
 
+    Assert.assertEquals(Arrays.<URI>asList(URI.create("locator://gemfire-1-locator.gemfire-cluster:10334")), envParser.getLocators());
+  }
 
   private void setCreditentials(String vcapServices) throws Exception{
     // Mocking the credentials for getCredentials
